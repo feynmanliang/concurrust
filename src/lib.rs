@@ -1,3 +1,26 @@
+struct Task<T: Copy> {
+    closure: Box<Fn() -> T>,
+    pub result: Option<T>
+}
+
+impl <T: Copy> Task<T> {
+    fn run(&self) -> T {
+        (self.closure)()
+    }
+
+    pub fn await(&mut self) -> T {
+        if let Some(res) = self.result {
+            res
+        } else {
+            let res = self.run();
+            self.result = Some(res);
+            res
+        }
+    }
+}
+
+
+
 /// Example:
 ///
 /// ```
