@@ -26,6 +26,26 @@ impl <T: Copy> Task<T> {
     }
 }
 
+/// Example:
+///
+/// ```
+/// use concurrust::*;
+/// let ys = map(|x| x+1, vec![1,2,3]);
+/// assert_eq!(ys, vec![2,3,4])
+/// ```
+pub fn parmap<F,T: Clone, U>(f: &F, xs: Vec<T> ) -> Vec<U>
+    where F: Fn(T) -> U {
+    match xs {
+        _ if xs.len() < 1 => vec![],
+        _ if xs.len() == 1 => vec![f(xs[0].clone())],
+        _ => {
+            let mut left = parmap(f, xs[0..xs.len()/2].to_vec());
+            let right = parmap(f, xs[xs.len()/2..xs.len()].to_vec());
+            left.extend(right);
+            left
+        }
+    }
+}
 
 
 /// Example:
