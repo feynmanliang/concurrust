@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use std::sync::mpsc::sync_channel;
 use std::thread;
 
@@ -36,7 +37,7 @@ impl <T: Copy> Task<T> {
 /// let ys = map(|x| x+1, vec![1,2,3,4,5,6,7,8,9]);
 /// assert_eq!(ys, vec![2,3,4,5,6,7,8,9,10])
 /// ```
-pub fn parmap<F: Send + Clone + 'static, T: Copy + Send + 'static, U: Send + 'static>(f: F, xs: Vec<T> ) -> Vec<U>
+pub fn parmap<F: Send + Sync + 'static, T: Copy + Send + 'static, U: Send + 'static>(f: Arc<F>, xs: Vec<T> ) -> Vec<U>
     where F: Fn(T) -> U {
     match xs {
         _ if xs.len() < 1 => vec![],
