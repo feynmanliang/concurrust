@@ -1,3 +1,6 @@
+use std::sync::mpsc::sync_channel;
+use std::thread;
+
 struct Task<T: Copy> {
     closure: Box<Fn() -> T>,
     pub result: Option<T>
@@ -30,19 +33,39 @@ impl <T: Copy> Task<T> {
 ///
 /// ```
 /// use concurrust::*;
-/// let ys = map(|x| x+1, vec![1,2,3]);
-/// assert_eq!(ys, vec![2,3,4])
+/// let ys = map(|x| x+1, vec![1,2,3,4,5,6,7,8,9]);
+/// assert_eq!(ys, vec![2,3,4,5,6,7,8,9,10])
 /// ```
-pub fn parmap<F,T: Clone, U>(f: &F, xs: Vec<T> ) -> Vec<U>
+pub fn parmap<F: Send + Clone + 'static, T: Copy + Send + 'static, U: Send + 'static>(f: F, xs: Vec<T> ) -> Vec<U>
     where F: Fn(T) -> U {
     match xs {
         _ if xs.len() < 1 => vec![],
-        _ if xs.len() == 1 => vec![f(xs[0].clone())],
+        _ if xs.len() == 1 => vec![f(xs[0])],
         _ => {
-            let mut left = parmap(f, xs[0..xs.len()/2].to_vec());
-            let right = parmap(f, xs[xs.len()/2..xs.len()].to_vec());
-            left.extend(right);
-            left
+            let (tx, rx) = sync_channel(2);
+
+            {
+                let tx = tx.clone();
+                let left = xs[0..xs.len()/2].to_vec();
+                let f = f.clone();
+                thread::spawn(move || {
+                    let left = parmap(f, left);
+                    tx.send(left)
+                });
+            }
+            {
+                let tx = tx.clone();
+                let right = xs[xs.len()/2..xs.len()].to_vec();
+                let f = f.clone();
+                thread::spawn(move || {
+                    let right = parmap(f, right);
+                    tx.send(right)
+                });
+            }
+
+            let mut res = rx.recv().unwrap();
+            res.extend(rx.recv().unwrap());
+            res
         }
     }
 }
