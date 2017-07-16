@@ -4,6 +4,13 @@ struct Task<T: Copy> {
 }
 
 impl <T: Copy> Task<T> {
+    pub fn new(closure: Box<Fn() -> T>) -> Task<T> {
+        Task {
+            closure: closure,
+            result: None,
+        }
+    }
+
     fn run(&self) -> T {
         (self.closure)()
     }
