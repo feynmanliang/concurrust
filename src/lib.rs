@@ -1,4 +1,4 @@
-fn map<F,T,U>(f: F, xs: T ) -> Vec<U>
+pub fn map<F,T,U>(f: F, xs: T ) -> Vec<U>
     where F: Fn(T::Item) -> U,
           T: IntoIterator {
     let mut ys = Vec::new();
@@ -8,7 +8,7 @@ fn map<F,T,U>(f: F, xs: T ) -> Vec<U>
     ys
 }
 
-fn reduce<F,T,A>(f: F, a0: A, xs: T) -> A
+pub fn reduce<F,T,A>(f: F, a0: A, xs: T) -> A
     where F: Fn(T::Item, A) -> A,
           T: IntoIterator {
     let mut a = a0;
@@ -18,7 +18,7 @@ fn reduce<F,T,A>(f: F, a0: A, xs: T) -> A
     a
 }
 
-fn scan<F,T,A>(f: F, a0: A, xs: T) -> Vec<A>
+pub fn scan<F,T,A>(f: F, a0: A, xs: T) -> Vec<A>
     where F: Fn(T::Item, A) -> A,
           A: Copy,
           T: IntoIterator {
